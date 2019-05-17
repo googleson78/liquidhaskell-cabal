@@ -133,9 +133,9 @@ cabal configure -fliquidhaskell && cabal build
 
 (Running `cabal configure` without `-fliquidhaskell` will turn it back off.)
 
-## Custom LiquidHaskell Flags
+## Custom `liquidhaskell-cabal` options
 
-There are additional custom flag fields that you can add to your `.cabal` file
+There are additional custom option fields that you can add to your `.cabal` file
 for each executable or library:
 
 ### `x-liquidhaskell-options`
