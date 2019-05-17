@@ -132,7 +132,7 @@ liquidHaskellHook args verbosityFlag pkg lbi = do
           let buildInfo' = libBuildInfo lib
               checkedFiles = getCheckedFiles buildInfo'
 
-          warnMissingCheckedFiles checkedFiles
+          verifyCheckedFiles checkedFiles
 
           srcs <- filterCheckedFiles checkedFiles <$> findLibSources lib
           verifyComponent verbosity lbi clbi buildInfo'
@@ -142,7 +142,7 @@ liquidHaskellHook args verbosityFlag pkg lbi = do
           let buildInfo' = buildInfo exe
               checkedFiles = getCheckedFiles buildInfo'
 
-          warnMissingCheckedFiles checkedFiles
+          verifyCheckedFiles checkedFiles
 
           srcs <- filterCheckedFiles checkedFiles <$> findExeSources exe
           verifyComponent verbosity lbi clbi buildInfo'
@@ -222,11 +222,11 @@ getCheckedFiles bi =
     splitOn c str = let (pref, suff) = break (== c) str
                      in pref : splitOn c (drop 1 suff)
 
-warnMissingCheckedFiles :: CheckedFiles -> IO ()
-warnMissingCheckedFiles All = pure ()
-warnMissingCheckedFiles (Whitelist allowed) = for_ allowed $ \file -> do
+verifyCheckedFiles :: CheckedFiles -> IO ()
+verifyCheckedFiles All = pure ()
+verifyCheckedFiles (Whitelist allowed) = for_ allowed $ \file -> do
   exists <- doesPathExist file
-  unless exists $ putStrLn $ "Warning: " ++ file ++ " specified in " ++ liquidHaskellCheckedFiles ++ " is missing!"
+  unless exists $ dieNoVerbosity $ file ++ " specified in " ++ liquidHaskellCheckedFiles ++ " is missing!"
 
 --------------------------------------------------------------------------------
 -- Construct GHC Options -------------------------------------------------------
