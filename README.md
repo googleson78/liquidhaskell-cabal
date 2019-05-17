@@ -140,7 +140,7 @@ for each executable or library:
 
 ### `x-liquidhaskell-options`
 Extra command line flags to pass to LiquidHaskell (these are described in the [LiquidHaskell
-README](https://github.com/ucsd-progsys/liquidhaskell)).
+README](https://github.com/ucsd-progsys/liquidhaskell#command-line-options)).
 ```
 library
   (... other fields ...)
