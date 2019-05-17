@@ -209,7 +209,9 @@ data CheckedFiles =
 
 filterCheckedFiles :: CheckedFiles -> [FilePath] -> [FilePath]
 filterCheckedFiles All                 fps = fps
-filterCheckedFiles (Whitelist allowed) fps = allowed `intersect` fps
+filterCheckedFiles (Whitelist allowed) fps = intersectBy prefixOrEqual fps allowed
+  where
+    prefixOrEqual x y = x == y || y `isPrefixOf` x
 
 getCheckedFiles :: BuildInfo -> CheckedFiles
 getCheckedFiles bi =
