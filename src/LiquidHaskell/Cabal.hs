@@ -25,6 +25,7 @@ module LiquidHaskell.Cabal
 import Control.Exception
 import Control.Monad
 
+import Data.Foldable
 import Data.List
 import Data.Maybe
 
@@ -44,6 +45,7 @@ import Distribution.Simple.Utils
 import Distribution.Verbosity
 import Distribution.Utils.NubList
 
+import System.Directory (doesPathExist)
 import System.FilePath
 
 import Debug.Trace
@@ -128,15 +130,21 @@ liquidHaskellHook args verbosityFlag pkg lbi = do
       case component of
         CLib lib -> do
           let buildInfo' = libBuildInfo lib
+              checkedFiles = getCheckedFiles buildInfo'
 
-          srcs <- filterCheckedFiles (getCheckedFiles buildInfo') <$> findLibSources lib
+          warnMissingCheckedFiles checkedFiles
+
+          srcs <- filterCheckedFiles checkedFiles <$> findLibSources lib
           verifyComponent verbosity lbi clbi buildInfo'
             "library" srcs
 
         CExe exe -> do
           let buildInfo' = buildInfo exe
+              checkedFiles = getCheckedFiles buildInfo'
 
-          srcs <- filterCheckedFiles (getCheckedFiles buildInfo') <$> findExeSources exe
+          warnMissingCheckedFiles checkedFiles
+
+          srcs <- filterCheckedFiles checkedFiles <$> findExeSources exe
           verifyComponent verbosity lbi clbi buildInfo'
             ("executable " ++  unUnqualComponentName (exeName exe)) srcs
         _ -> return ()
@@ -211,6 +219,12 @@ getCheckedFiles bi =
     splitOn _ []  = []
     splitOn c str = let (pref, suff) = break (== c) str
                      in pref : splitOn c (drop 1 suff)
+
+warnMissingCheckedFiles :: CheckedFiles -> IO ()
+warnMissingCheckedFiles All = pure ()
+warnMissingCheckedFiles (Whitelist allowed) = for_ allowed $ \file -> do
+  exists <- doesPathExist file
+  unless exists $ putStrLn $ "Warning: " ++ file ++ " specified in " ++ liquidHaskellCheckedFiles ++ " is missing!"
 
 --------------------------------------------------------------------------------
 -- Construct GHC Options -------------------------------------------------------
